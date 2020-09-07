@@ -54,7 +54,7 @@ func main() {
 
 	client, err := lndclient.NewLndServices(&lndclient.LndServicesConfig{
 		LndAddress:  *rpcHost,
-		Network:     lndclient.Network("regtest"),
+		Network:     lndclient.Network(*network),
 		MacaroonDir: *macaroonDir,
 		TLSPath:     *tlsCertPath,
 		// Use the default lnd version check which checks for version
