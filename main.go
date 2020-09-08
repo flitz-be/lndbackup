@@ -6,7 +6,9 @@ import (
 	"log"
 	"os"
 
+	"github.com/budacom/lnd-backup/backup"
 	"github.com/lightninglabs/lndclient"
+
 	"google.golang.org/grpc"
 )
 
@@ -33,6 +35,7 @@ var (
 	defaultTLSCertPath = getEnv("TLS_CERT_PATH", "/root/.lnd")
 	defaultMacaroonDir = getEnv("MACAROON_PATH", "")
 	defaultNetwork     = getEnv("NETWORK", "mainnet")
+	defaultBucketURL   = getEnv("BUCKET_URL", "")
 
 	// Command-line flags
 	rpcHost = flag.String("rpc-host", defaultRPCHost,
@@ -44,6 +47,8 @@ var (
 	macaroonDir = flag.String("macaroon-dir", defaultMacaroonDir,
 		"The directory where macaroons are stored. The default value can be overwritten by MACAROON_DIR environment variable.")
 	network = flag.String("network", defaultNetwork,
+		"The chain network to operate on. The default value can be overwritten by NETWORK environment variable.")
+	bucketURL = flag.String("bucket-url", defaultBucketURL,
 		"The chain network to operate on. The default value can be overwritten by NETWORK environment variable.")
 )
 
@@ -70,8 +75,8 @@ func main() {
 
 	for {
 		select {
-		case backups := <-backupUpdates:
-			log.Printf(backups.MultiChanBackup.String())
+		case channelSnapshot := <-backupUpdates:
+			backup.ChannelSnapshot(context.Background(), *bucketURL, channelSnapshot)
 		case <-context.Background().Done():
 		}
 	}
