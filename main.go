@@ -57,6 +57,8 @@ func main() {
 
 	log.Printf("Starting Lightning Static Channel Backup Version=%v GitCommit=%v", version, gitCommit)
 
+	ctx := context.Background()
+
 	client, err := lndclient.NewLndServices(&lndclient.LndServicesConfig{
 		LndAddress:  *rpcHost,
 		Network:     lndclient.Network(*network),
@@ -71,13 +73,13 @@ func main() {
 		os.Exit(1)
 	}
 
-	backupUpdates, _, _ := client.Client.SubscribeChannelBackups(context.Background())
+	backupUpdates, _, _ := client.Client.SubscribeChannelBackups(ctx)
 
 	for {
 		select {
 		case channelSnapshot := <-backupUpdates:
-			backup.ChannelSnapshot(context.Background(), *bucketURL, channelSnapshot)
-		case <-context.Background().Done():
+			backup.ChannelSnapshot(ctx, *bucketURL, channelSnapshot)
+		case <-ctx.Done():
 		}
 	}
 }
