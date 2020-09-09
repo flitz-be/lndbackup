@@ -5,6 +5,8 @@ import (
 	"flag"
 	"log"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/budacom/lnd-backup/backup"
 	"github.com/lightninglabs/lndclient"
@@ -24,6 +26,11 @@ var (
 	// Set during go build
 	version   string
 	gitCommit string
+
+	signalsChannel = make(chan os.Signal, 1)
+	quit           = make(chan struct{})
+
+	backupsPending = false
 
 	// maxMsgRecvSize is the largest message our client will receive. We
 	// set this to ~50Mb atm.
@@ -55,9 +62,13 @@ var (
 func main() {
 	flag.Parse()
 
+	ctx := context.Background()
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
 	log.Printf("Starting Lightning Static Channel Backup Version=%v GitCommit=%v", version, gitCommit)
 
-	ctx := context.Background()
+	handleSignals()
 
 	client, err := lndclient.NewLndServices(&lndclient.LndServicesConfig{
 		LndAddress:  *rpcHost,
@@ -72,14 +83,36 @@ func main() {
 		log.Printf("cannot connect to lightning services: %v", err)
 		os.Exit(1)
 	}
+	defer client.Close()
 
 	backupUpdates, _, _ := client.Client.SubscribeChannelBackups(ctx)
 
+ReadBackupUpdates:
 	for {
 		select {
 		case channelSnapshot := <-backupUpdates:
+			backupsPending = true
 			backup.ChannelSnapshot(ctx, *bucketURL, channelSnapshot)
-		case <-ctx.Done():
+			backupsPending = false
+		case <-quit:
+			break ReadBackupUpdates
 		}
 	}
+}
+
+func handleSignals() {
+	signal.Notify(signalsChannel, syscall.SIGINT, syscall.SIGTERM)
+	go func() {
+		for {
+			select {
+			case <-signalsChannel:
+				if backupsPending == true {
+					log.Println("Waiting for pending backups")
+				}
+				log.Println("Shutting Down Gracefully")
+				close(quit)
+				return
+			}
+		}
+	}()
 }

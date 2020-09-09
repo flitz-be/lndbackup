@@ -17,7 +17,7 @@ import (
 func ChannelSnapshot(ctx context.Context, bucketURL string, snapshot lnrpc.ChanBackupSnapshot) {
 	bucket, err := OpenBucket(ctx, bucketURL)
 	if err != nil {
-		log.Printf("Failed to open bucket: %v\n", err)
+		log.Printf("Failed to open bucket: %v", err)
 	}
 	defer bucket.Close()
 
@@ -26,17 +26,17 @@ func ChannelSnapshot(ctx context.Context, bucketURL string, snapshot lnrpc.ChanB
 	// Open a *blob.Writer for the blob at blobKey.
 	writer, err := bucket.NewWriter(ctx, backupFileName, nil)
 	if err != nil {
-		log.Printf("Failed to write %q: %v\n", backupFileName, err)
+		log.Printf("Failed to write %q: %v", backupFileName, err)
 	}
 	defer writer.Close()
 
 	// Copy the data.
-	// bytes.NewReader(backup.MultiChanBackup.MultiChanBackup
-	copied, err := io.Copy(writer, bytes.NewReader(snapshot.MultiChanBackup.MultiChanBackup))
-	log.Printf("filename: %v, lenght: %v\n", backupFileName, copied)
+	log.Printf("Backup started: %v", backupFileName)
+	_, err = io.Copy(writer, bytes.NewReader(snapshot.MultiChanBackup.MultiChanBackup))
 	if err != nil {
-		log.Printf("Failed to copy data: %v\n", err)
+		log.Printf("Failed to copy data: %v", err)
 	}
+	log.Printf("Backup finished: %v", backupFileName)
 }
 
 func getName() string {
