@@ -8,13 +8,12 @@ import (
 	"log"
 	"time"
 
-	"github.com/lightningnetwork/lnd/lnrpc"
 	_ "gocloud.dev/blob/gcsblob"
 )
 
 // ChannelSnapshot uploads a channel backup snapshot muiltchannel
 // blob to a blob storage bucket
-func ChannelSnapshot(ctx context.Context, bucketURL string, snapshot lnrpc.ChanBackupSnapshot) {
+func ChannelSnapshot(ctx context.Context, bucketURL string, backup []byte) {
 	bucket, err := OpenBucket(ctx, bucketURL)
 	if err != nil {
 		log.Printf("Failed to open bucket: %v", err)
@@ -32,7 +31,7 @@ func ChannelSnapshot(ctx context.Context, bucketURL string, snapshot lnrpc.ChanB
 
 	// Copy the data.
 	log.Printf("Backup started: %v", backupFileName)
-	_, err = io.Copy(writer, bytes.NewReader(snapshot.MultiChanBackup.MultiChanBackup))
+	_, err = io.Copy(writer, bytes.NewReader(backup))
 	if err != nil {
 		log.Printf("Failed to copy data: %v", err)
 	}

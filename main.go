@@ -85,14 +85,20 @@ func main() {
 	}
 	defer client.Close()
 
+	log.Printf("Initial backup")
+	snapShot, err := client.Client.ChannelBackups(ctx)
+	backup.ChannelSnapshot(ctx, *bucketURL, snapShot)
+
 	backupUpdates, _, _ := client.Client.SubscribeChannelBackups(ctx)
+	log.Printf("Subscribed to channel backups")
 
 ReadBackupUpdates:
 	for {
 		select {
 		case channelSnapshot := <-backupUpdates:
 			backupsPending = true
-			backup.ChannelSnapshot(ctx, *bucketURL, channelSnapshot)
+			multiChanBackup := channelSnapshot.GetMultiChanBackup()
+			backup.ChannelSnapshot(ctx, *bucketURL, multiChanBackup.MultiChanBackup)
 			backupsPending = false
 		case <-quit:
 			break ReadBackupUpdates
