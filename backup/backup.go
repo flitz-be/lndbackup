@@ -16,7 +16,6 @@ import (
 // blob to a blob storage bucket
 func ChannelSnapshot(ctx context.Context, bucketURL string, snapshot lnrpc.ChanBackupSnapshot) {
 	bucket, err := OpenBucket(ctx, bucketURL)
-
 	if err != nil {
 		log.Printf("Failed to open bucket: %v\n", err)
 	}
