@@ -4,33 +4,32 @@ import (
 	"context"
 	"fmt"
 	"net/url"
-	"os"
+	"path/filepath"
+	"strings"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"gocloud.dev/blob"
-	"gocloud.dev/blob/fileblob"
 	"gocloud.dev/blob/gcsblob"
-	"gocloud.dev/blob/s3blob"
 	"gocloud.dev/gcp"
 )
 
+// OpenBucket returns a bucket using a bucket url.
+// It will prefix any object stored in it.
 func OpenBucket(ctx context.Context, bucketName string) (*blob.Bucket, error) {
 	url, err := url.Parse(bucketName)
 	if err != nil {
-		return nil, fmt.Errorf("cloud.OpenBucket: %v", err)
+		return nil, fmt.Errorf("Bucket url invalid: %v", err)
 	}
+
+	var bucket *blob.Bucket
 	switch url.Scheme {
-	case "file":
-		return fileblob.OpenBucket(url.Hostname(), nil)
 	case "gs":
-		return gsBucket(ctx, url.Hostname())
-	case "s3":
-		return s3Bucket(ctx, url.Hostname())
+		bucket, err = gsBucket(ctx, url.Hostname())
 	default:
-		return nil, fmt.Errorf("cloud.OpenBucket: invalid provider %s", url.Scheme)
+		return nil, fmt.Errorf("Bucket provider invalid: invalid provider %s", url.Scheme)
 	}
+
+	bucket = blob.PrefixedBucket(bucket, bucketPath(url.Path))
+	return bucket, err
 }
 
 func gsBucket(ctx context.Context, name string) (*blob.Bucket, error) {
@@ -47,18 +46,8 @@ func gsBucket(ctx context.Context, name string) (*blob.Bucket, error) {
 	return gcsblob.OpenBucket(ctx, c, name, nil)
 }
 
-// s3Bucket opens an s3 storage bucket. It assumes the following
-// environment variables are set: AWS_REGION, AWS_ACCESS_KEY_ID, and
-// AWS_SECRET_ACCESS_KEY.
-func s3Bucket(ctx context.Context, name string) (*blob.Bucket, error) {
-	region := os.ExpandEnv("AWS_REGION")
-	if region == "" {
-		region = "us-east-2"
-	}
-	c := &aws.Config{
-		Region:      aws.String(region),
-		Credentials: credentials.NewEnvCredentials(),
-	}
-	s := session.Must(session.NewSession(c))
-	return s3blob.OpenBucket(ctx, s, name, nil)
+func bucketPath(path string) string {
+	path = strings.TrimLeft(path, "/")
+	path = filepath.Clean(path) + "/"
+	return path
 }

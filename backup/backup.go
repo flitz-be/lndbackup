@@ -7,8 +7,6 @@ import (
 	"io"
 	"log"
 	"time"
-
-	_ "gocloud.dev/blob/gcsblob"
 )
 
 // ChannelSnapshot uploads a channel backup snapshot muiltchannel
