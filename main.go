@@ -87,7 +87,10 @@ func main() {
 
 	log.Printf("Initial backup")
 	snapShot, err := client.Client.ChannelBackups(ctx)
-	backup.ChannelSnapshot(ctx, *bucketURL, snapShot)
+	err = backup.ChannelSnapshot(ctx, *bucketURL, snapShot)
+	if err != nil {
+		os.Exit(1)
+	}
 
 	backupUpdates, _, _ := client.Client.SubscribeChannelBackups(ctx)
 	log.Printf("Subscribed to channel backups")
