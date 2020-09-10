@@ -24,3 +24,4 @@ COPY --from=builder /build/lndbackup /bin/
 RUN apk add --no-cache \
     bash
 
+ENTRYPOINT [ "/bin/lndbackup" ]
