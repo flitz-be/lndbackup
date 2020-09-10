@@ -1,7 +1,7 @@
 pipeline:
   build:
     image: plugins/gcr
-    repo: ops-support-191021/lnd-backup
+    repo: ops-support-191021/lndbackup
     registry: us.gcr.io
     secrets: [ gcr_json_key ]
     squash: true

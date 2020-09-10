@@ -1,4 +1,4 @@
-module github.com/budacom/lnd-backup
+module github.com/budacom/lndbackup
 
 go 1.15
 

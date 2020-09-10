@@ -8,7 +8,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/budacom/lnd-backup/backup"
+	"github.com/budacom/lndbackup/backup"
 	"github.com/lightninglabs/lndclient"
 
 	"google.golang.org/grpc"

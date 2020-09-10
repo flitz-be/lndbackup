@@ -18,7 +18,7 @@ RUN go build
 FROM alpine as final
 
 # Copy the binaries and entrypoint from the builder image.
-COPY --from=builder /build/lnd-backup /bin/
+COPY --from=builder /build/lndbackup /bin/
 
 # Add bash.
 RUN apk add --no-cache \
