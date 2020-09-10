@@ -56,7 +56,7 @@ var (
 	network = flag.String("network", defaultNetwork,
 		"The chain network to operate on. The default value can be overwritten by NETWORK environment variable.")
 	bucketURL = flag.String("bucket-url", defaultBucketURL,
-		"The chain network to operate on. The default value can be overwritten by NETWORK environment variable.")
+		"The bucket url to backup the snapshot. The default value can be overwritten by BUCKET_URL environment variable.")
 )
 
 func main() {
