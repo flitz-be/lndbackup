@@ -9,7 +9,7 @@ GCP credentials should be in default location.
 Code based on [gocloud docs](https://gocloud.dev/howto/blob/#s3-compatible) and [Digital Ocean S3 compatibility docs](https://docs.digitalocean.com/products/spaces/resources/s3-sdk-examples/).
 
 ```
-BUCKET_URL=s3://bucket_name
+BUCKET_URL=s3://bucket_name/sub/folder
 S3_KEY=Access_Key_ID
 S3_SECRET=Access_Key_Secret
 S3_ENDPOINT=endpoint (leave blank if using AWS)
