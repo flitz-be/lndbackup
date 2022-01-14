@@ -64,11 +64,11 @@ func s3Bucket(ctx context.Context, name string) (*blob.Bucket, error) {
 	if key == "" || secret == "" || region == "" {
 		return nil, fmt.Errorf("key, secret and region should be set: %s, %s, %s", key, secret, region)
 	}
-	var ptrRegion *string
+	var ptrEndpoint *string
 	if endpoint != "" {
-		ptrRegion = aws.String(endpoint)
+		ptrEndpoint = aws.String(endpoint)
 	}
-	ptrEndpoint := aws.String(region)
+	ptrRegion := aws.String(region)
 	sess, err := session.NewSession(&aws.Config{
 		Credentials: credentials.NewStaticCredentials(key, secret, ""),
 		Endpoint:    ptrEndpoint,
