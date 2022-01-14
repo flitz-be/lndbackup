@@ -4,11 +4,16 @@ import (
 	"context"
 	"fmt"
 	"net/url"
+	"os"
 	"path/filepath"
 	"strings"
 
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/session"
 	"gocloud.dev/blob"
 	"gocloud.dev/blob/gcsblob"
+	"gocloud.dev/blob/s3blob"
 	"gocloud.dev/gcp"
 )
 
@@ -24,6 +29,8 @@ func OpenBucket(ctx context.Context, bucketName string) (*blob.Bucket, error) {
 	switch url.Scheme {
 	case "gs":
 		bucket, err = gsBucket(ctx, url.Hostname())
+	case "s3":
+		bucket, err = s3Bucket(ctx, url.Hostname())
 	default:
 		return nil, fmt.Errorf("Bucket provider invalid: invalid provider %s", url.Scheme)
 	}
@@ -44,6 +51,33 @@ func gsBucket(ctx context.Context, name string) (*blob.Bucket, error) {
 		return nil, err
 	}
 	return gcsblob.OpenBucket(ctx, c, name, nil)
+}
+
+func s3Bucket(ctx context.Context, name string) (*blob.Bucket, error) {
+	//Based on:
+	// - https://gocloud.dev/howto/blob/#s3-compatible
+	// - https://docs.digitalocean.com/products/spaces/resources/s3-sdk-examples/
+	key := os.Getenv("S3_KEY")
+	secret := os.Getenv("S3_SECRET")
+	endpoint := os.Getenv("S3_ENDPOINT")
+	region := os.Getenv("S3_REGION")
+	if key == "" || secret == "" || region == "" {
+		return nil, fmt.Errorf("key, secret and region should be set: %s, %s, %s", key, secret, region)
+	}
+	var ptrRegion *string
+	if endpoint != "" {
+		ptrRegion = aws.String(endpoint)
+	}
+	ptrEndpoint := aws.String(region)
+	sess, err := session.NewSession(&aws.Config{
+		Credentials: credentials.NewStaticCredentials(key, secret, ""),
+		Endpoint:    ptrEndpoint,
+		Region:      ptrRegion,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return s3blob.OpenBucket(ctx, sess, name, nil)
 }
 
 func bucketPath(path string) string {
