@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"flag"
+	"fmt"
 	"log"
 	"os"
 	"os/signal"
@@ -71,10 +72,10 @@ func main() {
 	handleSignals()
 
 	client, err := lndclient.NewLndServices(&lndclient.LndServicesConfig{
-		LndAddress:  *rpcHost,
-		Network:     lndclient.Network(*network),
-		MacaroonDir: *macaroonDir,
-		TLSPath:     *tlsCertPath,
+		LndAddress:         *rpcHost,
+		Network:            lndclient.Network(*network),
+		CustomMacaroonPath: fmt.Sprintf("%s/admin.macaroon", *macaroonDir),
+		TLSPath:            *tlsCertPath,
 		// Use the default lnd version check which checks for version
 		// v0.11.0 and requires all build tags.
 		CheckVersion: nil,
