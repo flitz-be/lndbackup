@@ -4,7 +4,7 @@ go 1.15
 
 require (
 	github.com/aws/aws-sdk-go v1.31.13
-	github.com/lightninglabs/lndclient v1.0.1-0.20200909120500-234214a8257f
+	github.com/lightninglabs/lndclient v0.16.0-9
 	gocloud.dev v0.20.0
-	google.golang.org/grpc v1.29.1
+	google.golang.org/grpc v1.41.0
 )
